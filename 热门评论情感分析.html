@@ -1,0 +1,1179 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>网易云音乐热门评论情感分析</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.4.3/echarts.min.js"></script>
+<style>
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #667eea;
+        }
+        .stat-label {
+            color: #666;
+            margin-top: 5px;
+        }
+        .charts-container {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .chart-box {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .chart-title {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        .chart {
+            width: 100%;
+            height: 300px;
+        }
+        .comments-section {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .comments-section h2 {
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .comment-item {
+            border: 1px solid #eee;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        .comment-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .comment-rank {
+            font-weight: bold;
+            color: #667eea;
+        }
+        .comment-meta {
+            display: flex;
+            gap: 15px;
+        }
+        .comment-username {
+            font-weight: bold;
+        }
+        .comment-likes {
+            color: #ff6b6b;
+            font-weight: bold;
+        }
+        .comment-time {
+            color: #999;
+            font-size: 0.9em;
+        }
+        .comment-content {
+            margin: 15px 0;
+            white-space: pre-wrap;
+        }
+        .sentiment-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .sentiment-badge {
+            padding: 3px 10px;
+            border-radius: 10px;
+            font-size: 0.9em;
+            font-weight: bold;
+            color: white;
+        }
+        .sentiment-score {
+            color: #666;
+            font-size: 0.9em;
+        }
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .charts-container {
+                grid-template-columns: 1fr;
+            }
+            .comment-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+        }
+    
+</style>
+</head>
+<body>
+<div class="container">
+<div class="header">
+<h1>🔥 网易云音乐评论情感分析</h1>
+<p>基于所有评论的情感分析 | 生成时间：2025-11-10 14:19</p>
+</div>
+<div class="stats-grid">
+<div class="stat-card">
+<div class="stat-number">17748</div>
+<div class="stat-label">去重后评论总数</div>
+</div>
+<div class="stat-card">
+<div class="stat-number">8277</div>
+<div class="stat-label">积极评论数</div>
+</div>
+<div class="stat-card">
+<div class="stat-number">3192</div>
+<div class="stat-label">消极评论数</div>
+</div>
+<div class="stat-card">
+<div class="stat-number">6279</div>
+<div class="stat-label">中性评论数</div>
+</div>
+</div>
+<div class="charts-container">
+<div class="chart-box">
+<div class="chart-title">🎭 情感分布饼图</div>
+<div id="pieChart" class="chart"></div>
+</div>
+<div class="chart-box">
+<div class="chart-title">📈 情感趋势变化</div>
+<div id="trendChart" class="chart"></div>
+</div>
+</div>
+<div class="comments-section">
+<h2>💬 点赞数Top50评论详情</h2>
+<p style="text-align: center; color: #666; margin-bottom: 20px;">（由于评论数量较多，仅展示点赞数前50的评论）</p>
+<div class="comment-item">
+<div class="comment-header">
+<div class="comment-rank">#1</div>
+<div class="comment-meta">
+<span class="comment-username">1sereins</span>
+<span class="comment-likes">👍 25129</span>
+<span class="comment-time">2023-06-07</span>
+</div>
+</div>
+<div class="comment-content">高三学子以为自己跳出了染缸，其实是跳进了一个更大的染缸，大学是，社会更是，我们生而就在染缸之中，所谓的跳出染缸，实则是跳进了更大的染缸。</div>
+<div class="sentiment-info">
+<span class="sentiment-badge" style="background-color: #4CAF50;">
+积极
+</span>
+<span class="sentiment-score">情感分数: 0.968</span>
+</div>
+</div>
+<div class="comment-item">
+<div class="comment-header">
+<div class="comment-rank">#2</div>
+<div class="comment-meta">
+<span class="comment-username">懶得同妳講</span>
+<span class="comment-likes">👍 21710</span>
+<span class="comment-time">2023-07-14</span>
+</div>
+</div>
+<div class="comment-content">我要山 要海 要自由 开玩笑的 我要饭的</div>
+<div class="sentiment-info">
+<span class="sentiment-badge" style="background-color: #4CAF50;">
+积极
+</span>
+<span class="sentiment-score">情感分数: 0.969</span>
+</div>
+</div>
+<div class="comment-item">
+<div class="comment-header">
+<div class="comment-rank">#3</div>
+<div class="comment-meta">
+<span class="comment-username">dolbeabbbb</span>
+<span class="comment-likes">👍 19723</span>
+<span class="comment-time">2023-08-03</span>
+</div>
+</div>
+<div class="comment-content">学校的水池常年肮脏，不没小腿的水上浮着一层黏腻的绿沼，然而每天放学都能看到浮藻下游动的鲜活的红。我笑话这些鱼顽固的生命，佩服它们的忍耐力。终于有一天我笑不出来了，我意识到我也毫无尊严吞食着染缸里肮脏的浮渣，我也一辈子都离不开这滩死水。我也向往大海茫茫，可却无舟载我赴所向</div>
+<div class="sentiment-info">
+<span class="sentiment-badge" style="background-color: #4CAF50;">
+积极
+</span>
+<span class="sentiment-score">情感分数: 0.872</span>
+</div>
+</div>
+<div class="comment-item">
+<div class="comment-header">
+<div class="comment-rank">#4</div>
+<div class="comment-meta">
+<span class="comment-username">斯瓦尔巴天马</span>
+<span class="comment-likes">👍 17720</span>
+<span class="comment-time">2023-05-20</span>
+</div>
+</div>
+<div class="comment-content">从床跳进染缸，何不拥抱欲望</div>
+<div class="sentiment-info">
+<span class="sentiment-badge" style="background-color: #FFC107;">
+中性
+</span>
+<span class="sentiment-score">情感分数: 0.694</span>
+</div>
+</div>
+<div class="comment-item">
+<div class="comment-header">
+<div class="comment-rank">#5</div>
+<div class="comment-meta">
+<span class="comment-username">z_zip-</span>
+<span class="comment-likes">👍 12882</span>
+<span class="comment-time">2023-05-20</span>
+</div>
+</div>
+<div class="comment-content">《缸》中引用到告子的思想“性无善无不善论”。即人生来赤裸，而后天分出善恶。<br>“染缸”一词比喻污浊的大环境。跳进染缸后，我不再是我，而成为流水线的半成品，等待染缸侵染加工。<br>染缸斑驳陆离，封存梦想和信仰。需在染缸中奔向沉底的铜钱，游向欲望，平淡无趣的迎来死亡。<br>于是反抗，砸了染缸。</div>
+<div class="sentiment-info">
+<span class="sentiment-badge" style="background-color: #4CAF50;">
+积极
+</span>
+<span class="sentiment-score">情感分数: 0.98</span>
+</div>
+</div>
+<div class="comment-item">
+<div class="comment-header">
+<div class="comment-rank">#6</div>
+<div class="comment-meta">
+<span class="comment-username">Apeee_</span>
+<span class="comment-likes">👍 11162</span>
+<span class="comment-time">2024-03-14</span>
+</div>
+</div>
+<div class="comment-content">可是你看，连你都没办法共情当年的你自己。连你，都会说出，“小学生有什么累的”“初中生有什么累的”“等你大了你就知道这些都不算什么”，甚至是“我都不知道当年我在抱怨什么”，你就该知道，染缸里那些有毒的浮渣已经深深地嵌进了你身体的每一寸。你出不去了，永远都是。</div>
+<div class="sentiment-info">
+<span class="sentiment-badge" style="background-color: #4CAF50;">
+积极
+</span>
+<span class="sentiment-score">情感分数: 0.964</span>
+</div>
+</div>
+<div class="comment-item">
+<div class="comment-header">
+<div class="comment-rank">#7</div>
+<div class="comment-meta">
+<span class="comment-username">Nothing百无</span>
+<span class="comment-likes">👍 11099</span>
+<span class="comment-time">2023-05-21</span>
+</div>
+</div>
+<div class="comment-content">草东 更适合中国摇滚宝宝的乐队</div>
+<div class="sentiment-info">
+<span class="sentiment-badge" style="background-color: #4CAF50;">
+积极
+</span>
+<span class="sentiment-score">情感分数: 0.997</span>
+</div>
+</div>
+<div class="comment-item">
+<div class="comment-header">
+<div class="comment-rank">#8</div>
+<div class="comment-meta">
+<span class="comment-username">淚暈有滴進uheart嗎</span>
+<span class="comment-likes">👍 9649</span>
+<span class="comment-time">2024-02-12</span>
+</div>
+</div>
+<div class="comment-content">我妈讨厌草东 但我喜欢 她总说草东就像愤青般的风格 其实在我这个年纪十四五岁听歌也能明白意思 他们的歌并不是鼓励人们成为愤青 而是把麻木的人喊醒 那几声嘶吼 将人吼醒啊。</div>
+<div class="sentiment-info">
+<span class="sentiment-badge" style="background-color: #4CAF50;">
+积极
+</span>
+<span class="sentiment-score">情感分数: 0.999</span>
+</div>
+</div>
+<div class="comment-item">
+<div class="comment-header">
+<div class="comment-rank">#9</div>
+<div class="comment-meta">
+<span class="comment-username">肉饼豪吃</span>
+<span class="comment-likes">👍 8194</span>
+<span class="comment-time">2024-11-07</span>
+</div>
+</div>
+<div class="comment-content">司马光砸《缸》：群儿戏于庭，一儿登瓮：“123跳！跳进染缸🤓”，足跌没水中：“游向死亡！😫游向死亡！😫”。众皆弃去，光持石🪨击瓮破之：“砸了染缸！砸了染缸！”水迸，儿得活。</div>
+<div class="sentiment-info">
+<span class="sentiment-badge" style="background-color: #F44336;">
+消极
+</span>
+<span class="sentiment-score">情感分数: 0.052</span>
+</div>
+</div>
+<div class="comment-item">
+<div class="comment-header">
+<div class="comment-rank">#10</div>
+<div class="comment-meta">
+<span class="comment-username">katadesi</span>
+<span class="comment-likes">👍 7315</span>
+<span class="comment-time">2023-11-25</span>
+</div>
+</div>
+<div class="comment-content">好凶的音乐，不是那种极端音乐般的嘶吼，而是一双凌厉的眼睛盯着你目不转睛。</div>
+<div class="sentiment-info">
+<span class="sentiment-badge" style="background-color: #FFC107;">
+中性
+</span>
+<span class="sentiment-score">情感分数: 0.388</span>
+</div>
+</div>
+<div class="comment-item">
+<div class="comment-header">
+<div class="comment-rank">#11</div>
+<div class="comment-meta">
+<span class="comment-username">花江夏树i</span>
+<span class="comment-likes">👍 6992</span>
+<span class="comment-time">2023-09-25</span>
+</div>
+</div>
+<div class="comment-content">感觉很累的话，有三种方法可以缓解<br>1. 吃点你喜欢的甜品<br>2.可以找朋友倾诉一下<br>3.21跳</div>
+<div class="sentiment-info">
+<span class="sentiment-badge" style="background-color: #4CAF50;">
+积极
+</span>
+<span class="sentiment-score">情感分数: 0.994</span>
+</div>
+</div>
+<div class="comment-item">
+<div class="comment-header">
+<div class="comment-rank">#12</div>
+<div class="comment-meta">
+<span class="comment-username">TeacheX</span>
+<span class="comment-likes">👍 4743</span>
+<span class="comment-time">2024-01-27</span>
+</div>
+</div>
+<div class="comment-content">我要山，要海，要自由。开玩笑的，考不上我要死</div>
+<div class="sentiment-info">
+<span class="sentiment-badge" style="background-color: #4CAF50;">
+积极
+</span>
+<span class="sentiment-score">情感分数: 0.974</span>
+</div>
+</div>
+<div class="comment-item">
+<div class="comment-header">
+<div class="comment-rank">#13</div>
+<div class="comment-meta">
+<span class="comment-username">益达awa</span>
+<span class="comment-likes">👍 4475</span>
+<span class="comment-time">2025-02-26</span>
+</div>
+</div>
+<div class="comment-content">那些说草东没有鼓手的，是因为你们没人带你们去买玩具吗</div>
+<div class="sentiment-info">
+<span class="sentiment-badge" style="background-color: #4CAF50;">
+积极
+</span>
+<span class="sentiment-score">情感分数: 0.738</span>
+</div>
+</div>
+<div class="comment-item">
+<div class="comment-header">
+<div class="comment-rank">#14</div>
+<div class="comment-meta">
+<span class="comment-username">Icarusfells</span>
+<span class="comment-likes">👍 4432</span>
+<span class="comment-time">2023-05-27</span>
+</div>
+</div>
+<div class="comment-content">草东总的来说还是小众的，小众到只能吼出当代青年人的愤慨，吼到麻木的人有思想，但总归来说又不是让你去做愤青的，是救出来罢</div>
+<div class="sentiment-info">
+<span class="sentiment-badge" style="background-color: #4CAF50;">
+积极
+</span>
+<span class="sentiment-score">情感分数: 1.0</span>
+</div>
+</div>
+<div class="comment-item">
+<div class="comment-header">
+<div class="comment-rank">#15</div>
+<div class="comment-meta">
+<span class="comment-username">猪飞啊飞</span>
+<span class="comment-likes">👍 3951</span>
+<span class="comment-time">2023-05-20</span>
+</div>
+</div>
+<div class="comment-content">干了草东这缸烈酒，兄弟姐妹们高考冲啊！</div>
+<div class="sentiment-info">
+<span class="sentiment-badge" style="background-color: #FFC107;">
+中性
+</span>
+<span class="sentiment-score">情感分数: 0.358</span>
+</div>
+</div>
+<div class="comment-item">
+<div class="comment-header">
+<div class="comment-rank">#16</div>
+<div class="comment-meta">
+<span class="comment-username">indifferent_秦</span>
+<span class="comment-likes">👍 3669</span>
+<span class="comment-time">2023-12-17</span>
+</div>
+</div>
+<div class="comment-content">中国人好像一辈子缸里，月考，中考，高考，考研，考公，考编，工作，我们总说上岸上岸，总是不停的在考，一直在水里不停的遨游的考，为了升学忙碌，为了结婚忙碌着，为了养孩子一生劳累忙碌，为了工作忙碌，还为了房贷忙碌，砸了这个染缸又怎么样，还有另外一个缸，无数的缸。</div>
+<div class="sentiment-info">
+<span class="sentiment-badge" style="background-color: #4CAF50;">
+积极
+</span>
+<span class="sentiment-score">情感分数: 1.0</span>
+</div>
+</div>
+<div class="comment-item">
+<div class="comment-header">
+<div class="comment-rank">#17</div>
+<div class="comment-meta">
+<span class="comment-username">不要蓝月只要靓</span>
+<span class="comment-likes">👍 3635</span>
+<span class="comment-time">2024-02-12</span>
+</div>
+</div>
+<div class="comment-content">当听闻有学子跳楼并不惊奇，而有人退学却无法理解，为其感到不值的时候，我突然意识到我成为了染缸</div>
+<div class="sentiment-info">
+<span class="sentiment-badge" style="background-color: #4CAF50;">
+积极
+</span>
+<span class="sentiment-score">情感分数: 0.99</span>
+</div>
+</div>
+<div class="comment-item">
+<div class="comment-header">
+<div class="comment-rank">#18</div>
+<div class="comment-meta">
+<span class="comment-username">概率博弈</span>
+<span class="comment-likes">👍 3617</span>
+<span class="comment-time">2024-01-06</span>
+</div>
+</div>
+<div class="comment-content">草东给我的感觉就是，一群人被周围种种束缚困住，处于一种绝望的环境中。 但是这群人有一种旺盛的生命力，内心是极不服的，被打倒也毫不畏惧，困难再大，处境再绝望，心里的火焰也不会熄灭</div>
+<div class="sentiment-info">
+<span class="sentiment-badge" style="background-color: #4CAF50;">
+积极
+</span>
+<span class="sentiment-score">情感分数: 1.0</span>
+</div>
+</div>
+<div class="comment-item">
+<div class="comment-header">
+<div class="comment-rank">#19</div>
+<div class="comment-meta">
+<span class="comment-username">nomakemebad</span>
+<span class="comment-likes">👍 3210</span>
+<span class="comment-time">2024-01-16</span>
+</div>
+</div>
+<div class="comment-content">“我怀疑我们生在一个缸里，不然怎么会处处碰壁”——不知</div>
+<div class="sentiment-info">
+<span class="sentiment-badge" style="background-color: #4CAF50;">
+积极
+</span>
+<span class="sentiment-score">情感分数: 0.703</span>
+</div>
+</div>
+<div class="comment-item">
+<div class="comment-header">
+<div class="comment-rank">#20</div>
+<div class="comment-meta">
+<span class="comment-username">沉梦昂志___z</span>
+<span class="comment-likes">👍 3133</span>
+<span class="comment-time">2024-01-14</span>
+</div>
+</div>
+<div class="comment-content">“你既不是张麻子也不是黄四郎，<br>你也不是老三，你连六子也不算是。<br>你是鹅城的鹅，好在有一点。<br>还踩着黄土地，有些吃食。”</div>
+<div class="sentiment-info">
+<span class="sentiment-badge" style="background-color: #FFC107;">
+中性
+</span>
+<span class="sentiment-score">情感分数: 0.572</span>
+</div>
+</div>
+<div class="comment-item">
+<div class="comment-header">
+<div class="comment-rank">#21</div>
+<div class="comment-meta">
+<span class="comment-username">SeniorCynic</span>
+<span class="comment-likes">👍 3105</span>
+<span class="comment-time">2023-12-02</span>
+</div>
+</div>
+<div class="comment-content">想起来初中班主任说过的：“社会是个大染缸。教育是它的主流色彩。”</div>
+<div class="sentiment-info">
+<span class="sentiment-badge" style="background-color: #4CAF50;">
+积极
+</span>
+<span class="sentiment-score">情感分数: 1.0</span>
+</div>
+</div>
+<div class="comment-item">
+<div class="comment-header">
+<div class="comment-rank">#22</div>
+<div class="comment-meta">
+<span class="comment-username">尼斯湖的水干了</span>
+<span class="comment-likes">👍 2973</span>
+<span class="comment-time">2023-05-22</span>
+</div>
+</div>
+<div class="comment-content">砸了它 顺便砸了我 拜托你啦</div>
+<div class="sentiment-info">
+<span class="sentiment-badge" style="background-color: #F44336;">
+消极
+</span>
+<span class="sentiment-score">情感分数: 0.032</span>
+</div>
+</div>
+<div class="comment-item">
+<div class="comment-header">
+<div class="comment-rank">#23</div>
+<div class="comment-meta">
+<span class="comment-username">白榆佰钰佰鱼白</span>
+<span class="comment-likes">👍 2347</span>
+<span class="comment-time">2024-07-17</span>
+</div>
+</div>
+<div class="comment-content">“只有死鱼和不怕死的鱼才能离开缸”</div>
+<div class="sentiment-info">
+<span class="sentiment-badge" style="background-color: #F44336;">
+消极
+</span>
+<span class="sentiment-score">情感分数: 0.016</span>
+</div>
+</div>
+<div class="comment-item">
+<div class="comment-header">
+<div class="comment-rank">#24</div>
+<div class="comment-meta">
+<span class="comment-username">他望了她一眼</span>
+<span class="comment-likes">👍 2345</span>
+<span class="comment-time">2023-05-29</span>
+</div>
+</div>
+<div class="comment-content">他们认为教育的基础就是“摧毁学生的意志”。但是，这位学生坚韧倔强，骄傲而有才气，他们没有能够摧毁他的个性和意志。这种教育只教会他一件事:憎恨自己。整整一生，他都把全部想象的天才、全部思维能力用来反对自己，反对这个无辜而高尚的对象。</div>
+<div class="sentiment-info">
+<span class="sentiment-badge" style="background-color: #4CAF50;">
+积极
+</span>
+<span class="sentiment-score">情感分数: 1.0</span>
+</div>
+</div>
+<div class="comment-item">
+<div class="comment-header">
+<div class="comment-rank">#25</div>
+<div class="comment-meta">
+<span class="comment-username">说好多话</span>
+<span class="comment-likes">👍 2211</span>
+<span class="comment-time">2023-05-29</span>
+</div>
+</div>
+<div class="comment-content">今天早上校园广播放的缸！！！谁懂啊！！！走到教学楼门口突然听见草东的歌 谁懂啊！！！突然感觉一天都美好了！！！</div>
+<div class="sentiment-info">
+<span class="sentiment-badge" style="background-color: #F44336;">
+消极
+</span>
+<span class="sentiment-score">情感分数: 0.064</span>
+</div>
+</div>
+<div class="comment-item">
+<div class="comment-header">
+<div class="comment-rank">#26</div>
+<div class="comment-meta">
+<span class="comment-username">白吟浪乐队</span>
+<span class="comment-likes">👍 2137</span>
+<span class="comment-time">2025-01-29</span>
+</div>
+</div>
+<div class="comment-content">如果在2035年有一个叫白吟浪的乐队，那么说明我成功了</div>
+<div class="sentiment-info">
+<span class="sentiment-badge" style="background-color: #FFC107;">
+中性
+</span>
+<span class="sentiment-score">情感分数: 0.682</span>
+</div>
+</div>
+<div class="comment-item">
+<div class="comment-header">
+<div class="comment-rank">#27</div>
+<div class="comment-meta">
+<span class="comment-username">伍肆-_</span>
+<span class="comment-likes">👍 1938</span>
+<span class="comment-time">2024-12-28</span>
+</div>
+</div>
+<div class="comment-content">常年听草东的人都目光炯炯有神，非常自信，且智商逐年上升，最后完全成为天才。听草东会改造身体结构，预防各种不治之症。人一旦开始听草东就说明这个人的智慧品行样貌通通都是上等，这辈子都能在任何地方风姿飒爽。逃避特具有强烈的社会正义感，对治安稳定有巨大的贡献，保护普通人的生命</div>
+<div class="sentiment-info">
+<span class="sentiment-badge" style="background-color: #4CAF50;">
+积极
+</span>
+<span class="sentiment-score">情感分数: 1.0</span>
+</div>
+</div>
+<div class="comment-item">
+<div class="comment-header">
+<div class="comment-rank">#28</div>
+<div class="comment-meta">
+<span class="comment-username">雾眠枫_</span>
+<span class="comment-likes">👍 1521</span>
+<span class="comment-time">2024-10-19</span>
+</div>
+</div>
+<div class="comment-content">如果我从我家21楼跳下去，我的血就是染缸的染料，这个世界就是巨大的染缸。</div>
+<div class="sentiment-info">
+<span class="sentiment-badge" style="background-color: #4CAF50;">
+积极
+</span>
+<span class="sentiment-score">情感分数: 0.744</span>
+</div>
+</div>
+<div class="comment-item">
+<div class="comment-header">
+<div class="comment-rank">#29</div>
+<div class="comment-meta">
+<span class="comment-username">岁岁又栀桉_</span>
+<span class="comment-likes">👍 1490</span>
+<span class="comment-time">2024-10-08</span>
+</div>
+</div>
+<div class="comment-content">总以为自己比别人清醒，可我跳得比谁都快</div>
+<div class="sentiment-info">
+<span class="sentiment-badge" style="background-color: #4CAF50;">
+积极
+</span>
+<span class="sentiment-score">情感分数: 0.716</span>
+</div>
+</div>
+<div class="comment-item">
+<div class="comment-header">
+<div class="comment-rank">#30</div>
+<div class="comment-meta">
+<span class="comment-username">地下室手记</span>
+<span class="comment-likes">👍 1482</span>
+<span class="comment-time">2023-09-15</span>
+</div>
+</div>
+<div class="comment-content">我睡觉都放草东的专辑 怨气大得一批 鬼看都不敢看我一眼 主打一手驱邪 早上起来之后听房东的猫缓和一下 主打一手精神分裂</div>
+<div class="sentiment-info">
+<span class="sentiment-badge" style="background-color: #4CAF50;">
+积极
+</span>
+<span class="sentiment-score">情感分数: 0.821</span>
+</div>
+</div>
+<div class="comment-item">
+<div class="comment-header">
+<div class="comment-rank">#31</div>
+<div class="comment-meta">
+<span class="comment-username">sxtq_MjIu</span>
+<span class="comment-likes">👍 1322</span>
+<span class="comment-time">2024-04-08</span>
+</div>
+</div>
+<div class="comment-content">不怕大家笑 我唯一的社交方式就是到处去评论 看到红色的消息我会开心很久</div>
+<div class="sentiment-info">
+<span class="sentiment-badge" style="background-color: #4CAF50;">
+积极
+</span>
+<span class="sentiment-score">情感分数: 0.866</span>
+</div>
+</div>
+<div class="comment-item">
+<div class="comment-header">
+<div class="comment-rank">#32</div>
+<div class="comment-meta">
+<span class="comment-username">斯空见惯_5VPq</span>
+<span class="comment-likes">👍 1310</span>
+<span class="comment-time">2025-07-24</span>
+</div>
+</div>
+<div class="comment-content">暑假还在跳进染缸的是这个👍🏻</div>
+<div class="sentiment-info">
+<span class="sentiment-badge" style="background-color: #FFC107;">
+中性
+</span>
+<span class="sentiment-score">情感分数: 0.651</span>
+</div>
+</div>
+<div class="comment-item">
+<div class="comment-header">
+<div class="comment-rank">#33</div>
+<div class="comment-meta">
+<span class="comment-username">MisterBarrel</span>
+<span class="comment-likes">👍 1267</span>
+<span class="comment-time">2025-03-30</span>
+</div>
+</div>
+<div class="comment-content">其实，听过草东没有派对的都知道，《芽》和《孑》的鼓是最好听的，《但》的前奏是最长的，《缸》的小号最好听，《intro》的歌词是最富有深意的</div>
+<div class="sentiment-info">
+<span class="sentiment-badge" style="background-color: #4CAF50;">
+积极
+</span>
+<span class="sentiment-score">情感分数: 1.0</span>
+</div>
+</div>
+<div class="comment-item">
+<div class="comment-header">
+<div class="comment-rank">#34</div>
+<div class="comment-meta">
+<span class="comment-username">_我_爱_你_</span>
+<span class="comment-likes">👍 1234</span>
+<span class="comment-time">2024-12-15</span>
+</div>
+</div>
+<div class="comment-content">初音未来</div>
+<div class="sentiment-info">
+<span class="sentiment-badge" style="background-color: #4CAF50;">
+积极
+</span>
+<span class="sentiment-score">情感分数: 0.931</span>
+</div>
+</div>
+<div class="comment-item">
+<div class="comment-header">
+<div class="comment-rank">#35</div>
+<div class="comment-meta">
+<span class="comment-username">路西法_巽</span>
+<span class="comment-likes">👍 1213</span>
+<span class="comment-time">2023-08-06</span>
+</div>
+</div>
+<div class="comment-content">从世界的神话故事中对待洪水的方式来说，西方祈祷上帝的诺亚方舟，我们是自己的大禹疏水。楼主向往大海，却无舟载，那就成为自己的大禹，将困住自己的死水疏通。随便想的哈哈哈(●°u°●) 」</div>
+<div class="sentiment-info">
+<span class="sentiment-badge" style="background-color: #4CAF50;">
+积极
+</span>
+<span class="sentiment-score">情感分数: 0.999</span>
+</div>
+</div>
+<div class="comment-item">
+<div class="comment-header">
+<div class="comment-rank">#36</div>
+<div class="comment-meta">
+<span class="comment-username">消灭甜不辣</span>
+<span class="comment-likes">👍 1174</span>
+<span class="comment-time">2023-06-08</span>
+</div>
+</div>
+<div class="comment-content">社会是由人组成的，一定会适应社会，能够坚持本心，就足够了</div>
+<div class="sentiment-info">
+<span class="sentiment-badge" style="background-color: #4CAF50;">
+积极
+</span>
+<span class="sentiment-score">情感分数: 0.997</span>
+</div>
+</div>
+<div class="comment-item">
+<div class="comment-header">
+<div class="comment-rank">#37</div>
+<div class="comment-meta">
+<span class="comment-username">天杀的林晗</span>
+<span class="comment-likes">👍 1116</span>
+<span class="comment-time">2024-04-26</span>
+</div>
+</div>
+<div class="comment-content">“他们不会因为我们那几条人命改变教育方式”</div>
+<div class="sentiment-info">
+<span class="sentiment-badge" style="background-color: #4CAF50;">
+积极
+</span>
+<span class="sentiment-score">情感分数: 0.989</span>
+</div>
+</div>
+<div class="comment-item">
+<div class="comment-header">
+<div class="comment-rank">#38</div>
+<div class="comment-meta">
+<span class="comment-username">郭昕炀</span>
+<span class="comment-likes">👍 1062</span>
+<span class="comment-time">2024-09-21</span>
+</div>
+</div>
+<div class="comment-content">缸是林耕佑交了八年的女朋友，缸在林耕佑最困苦潦倒的时候一直陪在他身边，当林耕佑慢慢被听众接受时缸却离开了。2022年迷笛音乐节，一场突如而来的暴雨导致现场的机器一插电就会跳闸，林耕佑干脆办了一场不插电表演。林耕佑在唱到这首歌二分十秒时，大声对台下喊了一句“缸，你在吗?"</div>
+<div class="sentiment-info">
+<span class="sentiment-badge" style="background-color: #4CAF50;">
+积极
+</span>
+<span class="sentiment-score">情感分数: 0.997</span>
+</div>
+</div>
+<div class="comment-item">
+<div class="comment-header">
+<div class="comment-rank">#39</div>
+<div class="comment-meta">
+<span class="comment-username">Rilkeaaa</span>
+<span class="comment-likes">👍 987</span>
+<span class="comment-time">2024-02-14</span>
+</div>
+</div>
+<div class="comment-content">醒了没什么用，只会更加痛苦</div>
+<div class="sentiment-info">
+<span class="sentiment-badge" style="background-color: #F44336;">
+消极
+</span>
+<span class="sentiment-score">情感分数: 0.192</span>
+</div>
+</div>
+<div class="comment-item">
+<div class="comment-header">
+<div class="comment-rank">#40</div>
+<div class="comment-meta">
+<span class="comment-username">NPC-_S_P_</span>
+<span class="comment-likes">👍 983</span>
+<span class="comment-time">2025-03-29</span>
+</div>
+</div>
+<div class="comment-content">骂得好 小鬼听不懂</div>
+<div class="sentiment-info">
+<span class="sentiment-badge" style="background-color: #F44336;">
+消极
+</span>
+<span class="sentiment-score">情感分数: 0.255</span>
+</div>
+</div>
+<div class="comment-item">
+<div class="comment-header">
+<div class="comment-rank">#41</div>
+<div class="comment-meta">
+<span class="comment-username">听一会就睡了__</span>
+<span class="comment-likes">👍 981</span>
+<span class="comment-time">2024-10-14</span>
+</div>
+</div>
+<div class="comment-content">社会就是一个巨大的染缸 亿万青年跳进染缸拼命的往前游 直到上岸那一刻才发现青涩早已褪去 空留一身五彩斑斓的黑</div>
+<div class="sentiment-info">
+<span class="sentiment-badge" style="background-color: #4CAF50;">
+积极
+</span>
+<span class="sentiment-score">情感分数: 0.976</span>
+</div>
+</div>
+<div class="comment-item">
+<div class="comment-header">
+<div class="comment-rank">#42</div>
+<div class="comment-meta">
+<span class="comment-username">Supersonic_Youth</span>
+<span class="comment-likes">👍 966</span>
+<span class="comment-time">2023-05-24</span>
+</div>
+</div>
+<div class="comment-content">想起了柏杨老先生所提出的酱缸文化：“任何一个民族的文化，都像长江大河，滔滔不绝的流下去，但因为时间久了，长江大河里的许多污秽肮脏的东西，像死鱼、死猫、死耗子，开始沉淀，使这个水不能流动变成一潭死水，愈沉愈多，愈久愈腐，就成了一个酱缸，一个污泥坑，发酸发臭。”</div>
+<div class="sentiment-info">
+<span class="sentiment-badge" style="background-color: #FFC107;">
+中性
+</span>
+<span class="sentiment-score">情感分数: 0.513</span>
+</div>
+</div>
+<div class="comment-item">
+<div class="comment-header">
+<div class="comment-rank">#43</div>
+<div class="comment-meta">
+<span class="comment-username">吃个DOU饼拔</span>
+<span class="comment-likes">👍 954</span>
+<span class="comment-time">2025-04-02</span>
+</div>
+</div>
+<div class="comment-content">“染缸”的象征：歌曲中的“染缸”指代社会，“跳进染缸”意味着进入社会，人们在社会中会受到各种影响和改变。“看谁先游向欲望”“膨胀，膨胀，再膨胀，就像那数字一样”描述了人们在社会中对欲望的追逐，暗示了以欲望实现为唯一标准的价值观，也影射了资本主义社会下资本的膨胀</div>
+<div class="sentiment-info">
+<span class="sentiment-badge" style="background-color: #4CAF50;">
+积极
+</span>
+<span class="sentiment-score">情感分数: 1.0</span>
+</div>
+</div>
+<div class="comment-item">
+<div class="comment-header">
+<div class="comment-rank">#44</div>
+<div class="comment-meta">
+<span class="comment-username">叶帆quk</span>
+<span class="comment-likes">👍 950</span>
+<span class="comment-time">2024-07-26</span>
+</div>
+</div>
+<div class="comment-content">人生就像跳舞一样，我们不是要学别人，而是要展现自己的舞姿[多多可怜]</div>
+<div class="sentiment-info">
+<span class="sentiment-badge" style="background-color: #4CAF50;">
+积极
+</span>
+<span class="sentiment-score">情感分数: 0.987</span>
+</div>
+</div>
+<div class="comment-item">
+<div class="comment-header">
+<div class="comment-rank">#45</div>
+<div class="comment-meta">
+<span class="comment-username">Getsomehelp_</span>
+<span class="comment-likes">👍 864</span>
+<span class="comment-time">2024-07-31</span>
+</div>
+</div>
+<div class="comment-content">学校叫我剪头发，<br>我剪了。<br>挺凉快，可我一摸竟长出了一条辫子。<br>怎么一也剪不掉，便留下了。<br>三个春秋过去，我离开了，不知何时身上被套了一件长衫，它很漂亮。<br>夏天了，有些热了，我想脱下这件长衫。<br>却怎么也脱不下了...……</div>
+<div class="sentiment-info">
+<span class="sentiment-badge" style="background-color: #4CAF50;">
+积极
+</span>
+<span class="sentiment-score">情感分数: 0.994</span>
+</div>
+</div>
+<div class="comment-item">
+<div class="comment-header">
+<div class="comment-rank">#46</div>
+<div class="comment-meta">
+<span class="comment-username">我希望过节即使我和生活没有过节</span>
+<span class="comment-likes">👍 831</span>
+<span class="comment-time">2023-09-27</span>
+</div>
+</div>
+<div class="comment-content">跳进染缸~👉🏻</div>
+<div class="sentiment-info">
+<span class="sentiment-badge" style="background-color: #F44336;">
+消极
+</span>
+<span class="sentiment-score">情感分数: 0.267</span>
+</div>
+</div>
+<div class="comment-item">
+<div class="comment-header">
+<div class="comment-rank">#47</div>
+<div class="comment-meta">
+<span class="comment-username">sss-aa_</span>
+<span class="comment-likes">👍 820</span>
+<span class="comment-time">2023-08-02</span>
+</div>
+</div>
+<div class="comment-content">看了一圈就你最有诗意</div>
+<div class="sentiment-info">
+<span class="sentiment-badge" style="background-color: #FFC107;">
+中性
+</span>
+<span class="sentiment-score">情感分数: 0.573</span>
+</div>
+</div>
+<div class="comment-item">
+<div class="comment-header">
+<div class="comment-rank">#48</div>
+<div class="comment-meta">
+<span class="comment-username">崩崩崩的白里未寻舰长</span>
+<span class="comment-likes">👍 783</span>
+<span class="comment-time">2024-04-02</span>
+</div>
+</div>
+<div class="comment-content">中式教育的闭环于此形成</div>
+<div class="sentiment-info">
+<span class="sentiment-badge" style="background-color: #4CAF50;">
+积极
+</span>
+<span class="sentiment-score">情感分数: 0.89</span>
+</div>
+</div>
+<div class="comment-item">
+<div class="comment-header">
+<div class="comment-rank">#49</div>
+<div class="comment-meta">
+<span class="comment-username">玻汾仔</span>
+<span class="comment-likes">👍 783</span>
+<span class="comment-time">2023-06-07</span>
+</div>
+</div>
+<div class="comment-content">想跳进染缸的是我，想砸缸的是我，淹死的也是我</div>
+<div class="sentiment-info">
+<span class="sentiment-badge" style="background-color: #F44336;">
+消极
+</span>
+<span class="sentiment-score">情感分数: 0.275</span>
+</div>
+</div>
+<div class="comment-item">
+<div class="comment-header">
+<div class="comment-rank">#50</div>
+<div class="comment-meta">
+<span class="comment-username">Peline李不言</span>
+<span class="comment-likes">👍 779</span>
+<span class="comment-time">2023-06-24</span>
+</div>
+</div>
+<div class="comment-content">一切都太正常了，如果一个人年轻的时候没有一点反叛精神，该有多无聊。</div>
+<div class="sentiment-info">
+<span class="sentiment-badge" style="background-color: #4CAF50;">
+积极
+</span>
+<span class="sentiment-score">情感分数: 0.857</span>
+</div>
+</div>
+</div>
+</div>
+<script>
+const pieData = [{"value": 8277, "name": "\u79ef\u6781"}, {"value": 3192, "name": "\u6d88\u6781"}, {"value": 6279, "name": "\u4e2d\u6027"}];
+const trendData = {"dates": ["2023-05-20", "2023-05-21", "2023-05-22", "2023-05-23", "2023-05-24", "2023-05-25", "2023-05-26", "2023-05-27", "2023-05-28", "2023-05-29", "2023-05-30", "2023-05-31", "2023-06-01", "2023-06-02", "2023-06-03", "2023-06-04", "2023-06-05", "2023-06-06", "2023-06-07", "2023-06-08", "2023-06-09", "2023-06-10", "2023-06-11", "2023-06-12", "2023-06-13", "2023-06-14", "2023-06-15", "2023-06-16", "2023-06-17", "2023-06-18", "2023-06-19", "2023-06-20", "2023-06-21", "2023-06-22", "2023-06-23", "2023-06-24", "2023-06-25", "2023-06-26", "2023-06-27", "2023-06-28", "2023-06-29", "2023-06-30", "2023-07-01", "2023-07-02", "2023-07-03", "2023-07-04", "2023-07-05", "2023-07-06", "2023-07-07", "2023-07-08", "2023-07-09", "2023-07-10", "2023-07-11", "2023-07-12", "2023-07-13", "2023-07-14", "2023-07-15", "2023-07-16", "2023-07-17", "2023-07-18", "2023-07-19", "2023-07-20", "2023-07-21", "2023-07-22", "2023-07-23", "2023-07-24", "2023-07-25", "2023-07-26", "2023-07-27", "2023-07-28", "2023-07-29", "2023-07-30", "2023-07-31", "2023-08-01", "2023-08-02", "2023-08-03", "2023-08-04", "2023-08-05", "2023-08-06", "2023-08-07", "2023-08-08", "2023-08-09", "2023-08-10", "2023-08-11", "2023-08-12", "2023-08-13", "2023-08-14", "2023-08-15", "2023-08-16", "2023-08-17", "2023-08-18", "2023-08-19", "2023-08-20", "2023-08-21", "2023-08-22", "2023-08-23", "2023-08-24", "2023-08-25", "2023-08-26", "2023-08-27", "2023-08-28", "2023-08-29", "2023-08-30", "2023-08-31", "2023-09-01", "2023-09-02", "2023-09-03", "2023-09-04", "2023-09-05", "2023-09-06", "2023-09-07", "2023-09-08", "2023-09-09", "2023-09-10", "2023-09-11", "2023-09-12", "2023-09-13", "2023-09-14", "2023-09-15", "2023-09-16", "2023-09-17", "2023-09-18", "2023-09-19", "2023-09-20", "2023-09-21", "2023-09-22", "2023-09-23", "2023-09-24", "2023-09-25", "2023-09-26", "2023-09-27", "2023-09-28", "2023-09-29", "2023-09-30", "2023-10-01", "2023-10-02", "2023-10-03", "2023-10-04", "2023-10-05", "2023-10-06", "2023-10-07", "2023-10-08", "2023-10-09", "2023-10-10", "2023-10-11", "2023-10-12", "2023-10-13", "2023-10-14", "2023-10-15", "2023-10-16", "2023-10-17", "2023-10-18", "2023-10-19", "2023-10-20", "2023-10-21", "2023-10-22", "2023-10-23", "2023-10-24", "2023-10-25", "2023-10-26", "2023-10-27", "2023-10-28", "2023-10-29", "2023-10-30", "2023-10-31", "2023-11-01", "2023-11-02", "2023-11-03", "2023-11-04", "2023-11-05", "2023-11-06", "2023-11-07", "2023-11-08", "2023-11-09", "2023-11-10", "2023-11-11", "2023-11-12", "2023-11-13", "2023-11-14", "2023-11-15", "2023-11-16", "2023-11-17", "2023-11-18", "2023-11-19", "2023-11-20", "2023-11-21", "2023-11-22", "2023-11-23", "2023-11-24", "2023-11-25", "2023-11-26", "2023-11-27", "2023-11-28", "2023-11-29", "2023-11-30", "2023-12-01", "2023-12-02", "2023-12-03", "2023-12-04", "2023-12-05", "2023-12-06", "2023-12-07", "2023-12-08", "2023-12-09", "2023-12-10", "2023-12-11", "2023-12-12", "2023-12-13", "2023-12-14", "2023-12-15", "2023-12-16", "2023-12-17", "2023-12-18", "2023-12-19", "2023-12-20", "2023-12-21", "2023-12-22", "2023-12-23", "2023-12-24", "2023-12-25", "2023-12-26", "2023-12-27", "2023-12-28", "2023-12-29", "2023-12-30", "2023-12-31", "2024-01-01", "2024-01-02", "2024-01-03", "2024-01-04", "2024-01-05", "2024-01-06", "2024-01-07", "2024-01-08", "2024-01-09", "2024-01-10", "2024-01-11", "2024-01-12", "2024-01-13", "2024-01-14", "2024-01-15", "2024-01-16", "2024-01-17", "2024-01-18", "2024-01-19", "2024-01-20", "2024-01-21", "2024-01-22", "2024-01-23", "2024-01-24", "2024-01-25", "2024-01-26", "2024-01-27", "2024-01-28", "2024-01-29", "2024-01-30", "2024-01-31", "2024-02-01", "2024-02-02", "2024-02-03", "2024-02-04", "2024-02-05", "2024-02-06", "2024-02-07", "2024-02-08", "2024-02-09", "2024-02-10", "2024-02-11", "2024-02-12", "2024-02-13", "2024-02-14", "2024-02-15", "2024-02-16", "2024-02-17", "2024-02-18", "2024-02-19", "2024-02-20", "2024-02-21", "2024-02-22", "2024-02-23", "2024-02-24", "2024-02-25", "2024-02-26", "2024-02-27", "2024-02-28", "2024-02-29", "2024-03-01", "2024-03-02", "2024-03-03", "2024-03-04", "2024-03-05", "2024-03-06", "2024-03-07", "2024-03-08", "2024-03-09", "2024-03-10", "2024-03-11", "2024-03-12", "2024-03-13", "2024-03-14", "2024-03-15", "2024-03-16", "2024-03-17", "2024-03-18", "2024-03-19", "2024-03-20", "2024-03-21", "2024-03-22", "2024-03-23", "2024-03-24", "2024-03-25", "2024-03-26", "2024-03-27", "2024-03-28", "2024-03-29", "2024-03-30", "2024-03-31", "2024-04-01", "2024-04-02", "2024-04-03", "2024-04-04", "2024-04-05", "2024-04-06", "2024-04-07", "2024-04-08", "2024-04-09", "2024-04-10", "2024-04-11", "2024-04-12", "2024-04-13", "2024-04-14", "2024-04-15", "2024-04-16", "2024-04-17", "2024-04-18", "2024-04-19", "2024-04-20", "2024-04-21", "2024-04-22", "2024-04-23", "2024-04-24", "2024-04-25", "2024-04-26", "2024-04-27", "2024-04-28", "2024-04-29", "2024-04-30", "2024-05-01", "2024-05-02", "2024-05-03", "2024-05-04", "2024-05-05", "2024-05-06", "2024-05-07", "2024-05-08", "2024-05-09", "2024-05-10", "2024-05-11", "2024-05-12", "2024-05-13", "2024-05-14", "2024-05-15", "2024-05-16", "2024-05-17", "2024-05-18", "2024-05-19", "2024-05-20", "2024-05-21", "2024-05-22", "2024-05-23", "2024-05-24", "2024-05-25", "2024-05-26", "2024-05-27", "2024-05-28", "2024-05-29", "2024-05-30", "2024-05-31", "2024-06-01", "2024-06-02", "2024-06-03", "2024-06-04", "2024-06-05", "2024-06-06", "2024-06-07", "2024-06-08", "2024-06-09", "2024-06-10", "2024-06-11", "2024-06-12", "2024-06-13", "2024-06-14", "2024-06-15", "2024-06-16", "2024-06-17", "2024-06-18", "2024-06-19", "2024-06-20", "2024-06-21", "2024-06-22", "2024-06-23", "2024-06-24", "2024-06-25", "2024-06-26", "2024-06-27", "2024-06-28", "2024-06-29", "2024-06-30", "2024-07-01", "2024-07-02", "2024-07-03", "2024-07-04", "2024-07-05", "2024-07-06", "2024-07-07", "2024-07-08", "2024-07-09", "2024-07-10", "2024-07-11", "2024-07-12", "2024-07-13", "2024-07-14", "2024-07-15", "2024-07-16", "2024-07-17", "2024-07-18", "2024-07-19", "2024-07-20", "2024-07-21", "2024-07-22", "2024-07-23", "2024-07-24", "2024-07-25", "2024-07-26", "2024-07-27", "2024-07-28", "2024-07-29", "2024-07-30", "2024-07-31", "2024-08-01", "2024-08-02", "2024-08-03", "2024-08-04", "2024-08-05", "2024-08-06", "2024-08-07", "2024-08-08", "2024-08-09", "2024-08-10", "2024-08-11", "2024-08-12", "2024-08-13", "2024-08-14", "2024-08-15", "2024-08-16", "2024-08-17", "2024-08-18", "2024-08-19", "2024-08-20", "2024-08-21", "2024-08-22", "2024-08-23", "2024-08-24", "2024-08-25", "2024-08-26", "2024-08-27", "2024-08-28", "2024-08-29", "2024-08-30", "2024-08-31", "2024-09-01", "2024-09-02", "2024-09-03", "2024-09-04", "2024-09-05", "2024-09-06", "2024-09-07", "2024-09-08", "2024-09-09", "2024-09-10", "2024-09-11", "2024-09-12", "2024-09-13", "2024-09-14", "2024-09-15", "2024-09-16", "2024-09-17", "2024-09-18", "2024-09-19", "2024-09-20", "2024-09-21", "2024-09-22", "2024-09-23", "2024-09-24", "2024-09-25", "2024-09-26", "2024-09-27", "2024-09-28", "2024-09-29", "2024-09-30", "2024-10-01", "2024-10-02", "2024-10-03", "2024-10-04", "2024-10-05", "2024-10-06", "2024-10-07", "2024-10-08", "2024-10-09", "2024-10-10", "2024-10-11", "2024-10-12", "2024-10-13", "2024-10-14", "2024-10-15", "2024-10-16", "2024-10-17", "2024-10-18", "2024-10-19", "2024-10-20", "2024-10-21", "2024-10-22", "2024-10-23", "2024-10-24", "2024-10-25", "2024-10-26", "2024-10-27", "2024-10-28", "2024-10-29", "2024-10-30", "2024-10-31", "2024-11-01", "2024-11-02", "2024-11-03", "2024-11-04", "2024-11-05", "2024-11-06", "2024-11-07", "2024-11-08", "2024-11-09", "2024-11-10", "2024-11-11", "2024-11-12", "2024-11-13", "2024-11-14", "2024-11-15", "2024-11-16", "2024-11-17", "2024-11-18", "2024-11-19", "2024-11-20", "2024-11-21", "2024-11-22", "2024-11-23", "2024-11-24", "2024-11-25", "2024-11-26", "2024-11-27", "2024-11-28", "2024-11-29", "2024-11-30", "2024-12-01", "2024-12-02", "2024-12-03", "2024-12-04", "2024-12-05", "2024-12-06", "2024-12-07", "2024-12-08", "2024-12-09", "2024-12-10", "2024-12-11", "2024-12-12", "2024-12-13", "2024-12-14", "2024-12-15", "2024-12-16", "2024-12-17", "2024-12-18", "2024-12-19", "2024-12-20", "2024-12-21", "2024-12-22", "2024-12-23", "2024-12-24", "2024-12-25", "2024-12-26", "2024-12-27", "2024-12-28", "2024-12-29", "2024-12-30", "2024-12-31", "2025-01-01", "2025-01-02", "2025-01-03", "2025-01-04", "2025-01-05", "2025-01-06", "2025-01-07", "2025-01-08", "2025-01-09", "2025-01-10", "2025-01-11", "2025-01-12", "2025-01-13", "2025-01-14", "2025-01-15", "2025-01-16", "2025-01-17", "2025-01-18", "2025-01-19", "2025-01-20", "2025-01-21", "2025-01-22", "2025-01-23", "2025-01-24", "2025-01-25", "2025-01-26", "2025-01-27", "2025-01-28", "2025-01-29", "2025-01-30", "2025-01-31", "2025-02-01", "2025-02-02", "2025-02-03", "2025-02-04", "2025-02-05", "2025-02-06", "2025-02-07", "2025-02-08", "2025-02-09", "2025-02-10", "2025-02-11", "2025-02-12", "2025-02-13", "2025-02-14", "2025-02-15", "2025-02-16", "2025-02-17", "2025-02-18", "2025-02-19", "2025-02-20", "2025-02-21", "2025-02-22", "2025-02-23", "2025-02-24", "2025-02-25", "2025-02-26", "2025-02-27", "2025-02-28", "2025-03-01", "2025-03-02", "2025-03-03", "2025-03-04", "2025-03-05", "2025-03-06", "2025-03-07", "2025-03-08", "2025-03-09", "2025-03-10", "2025-03-11", "2025-03-12", "2025-03-13", "2025-03-14", "2025-03-15", "2025-03-16", "2025-03-17", "2025-03-18", "2025-03-19", "2025-03-20", "2025-03-21", "2025-03-22", "2025-03-23", "2025-03-24", "2025-03-25", "2025-03-26", "2025-03-27", "2025-03-28", "2025-03-29", "2025-03-30", "2025-03-31", "2025-04-01", "2025-04-02", "2025-04-03", "2025-04-04", "2025-04-05", "2025-04-06", "2025-04-07", "2025-04-08", "2025-04-09", "2025-04-10", "2025-04-11", "2025-04-12", "2025-04-13", "2025-04-14", "2025-04-15", "2025-04-16", "2025-04-17", "2025-04-18", "2025-04-19", "2025-04-20", "2025-04-21", "2025-04-22", "2025-04-23", "2025-04-24", "2025-04-25", "2025-04-26", "2025-04-27", "2025-04-28", "2025-04-29", "2025-04-30", "2025-05-01", "2025-05-02", "2025-05-03", "2025-05-04", "2025-05-05", "2025-05-06", "2025-05-07", "2025-05-08", "2025-05-09", "2025-05-10", "2025-05-11", "2025-05-12", "2025-05-13", "2025-05-14", "2025-05-15", "2025-05-16", "2025-05-17", "2025-05-18", "2025-05-19", "2025-05-20", "2025-05-21", "2025-05-22", "2025-05-23", "2025-05-24", "2025-05-25", "2025-05-26", "2025-05-27", "2025-05-28", "2025-05-29", "2025-05-30", "2025-05-31", "2025-06-01", "2025-06-02", "2025-06-03", "2025-06-04", "2025-06-05", "2025-06-06", "2025-06-07", "2025-06-08", "2025-06-09", "2025-06-10", "2025-06-11", "2025-06-12", "2025-06-13", "2025-06-14", "2025-06-15", "2025-06-16", "2025-06-17", "2025-06-18", "2025-06-19", "2025-06-20", "2025-06-21", "2025-06-22", "2025-06-23", "2025-06-24", "2025-06-25", "2025-06-26", "2025-06-27", "2025-06-28", "2025-06-29", "2025-06-30", "2025-07-01", "2025-07-02", "2025-07-03", "2025-07-04", "2025-07-05", "2025-07-06", "2025-07-07", "2025-07-08", "2025-07-09", "2025-07-10", "2025-07-11", "2025-07-12", "2025-07-13", "2025-07-14", "2025-07-15", "2025-07-16", "2025-07-17", "2025-07-18", "2025-07-19", "2025-07-20", "2025-07-21", "2025-07-22", "2025-07-23", "2025-07-24", "2025-07-25", "2025-07-26", "2025-07-27", "2025-07-28", "2025-07-29", "2025-07-30", "2025-07-31", "2025-08-01", "2025-08-02", "2025-08-03", "2025-08-04", "2025-08-05", "2025-08-06", "2025-08-07", "2025-08-08", "2025-08-09", "2025-08-10", "2025-08-11", "2025-08-12", "2025-08-13", "2025-08-14", "2025-08-15", "2025-08-16", "2025-08-17", "2025-08-18", "2025-08-19", "2025-08-20", "2025-08-21", "2025-08-22", "2025-08-23", "2025-08-24", "2025-08-25", "2025-08-26", "2025-08-27", "2025-08-28", "2025-08-29", "2025-08-30", "2025-08-31", "2025-09-01", "2025-09-02", "2025-09-03", "2025-09-04", "2025-09-05", "2025-09-06", "2025-09-07", "2025-09-08", "2025-09-09", "2025-09-10", "2025-09-11", "2025-09-12", "2025-09-13", "2025-09-14", "2025-09-15", "2025-09-16", "2025-09-17", "2025-09-18", "2025-09-19", "2025-09-20", "2025-09-21", "2025-09-22", "2025-09-23", "2025-09-24", "2025-09-25", "2025-09-26", "2025-09-27", "2025-09-28", "2025-09-29", "2025-09-30", "2025-10-01", "2025-10-02", "2025-10-03", "2025-10-04", "2025-10-05", "2025-10-06", "2025-10-07", "2025-10-08", "2025-10-09", "2025-10-10", "2025-10-11", "2025-10-12", "2025-10-13", "2025-10-14", "2025-10-15", "2025-10-16", "2025-10-17", "2025-10-18", "2025-10-19", "2025-10-20", "2025-10-21", "2025-10-22", "2025-10-23", "2025-10-24", "2025-10-25", "2025-10-26", "2025-10-27", "2025-10-28", "2025-10-29", "2025-10-30", "2025-10-31", "2025-11-01", "2025-11-02", "2025-11-03", "2025-11-04", "2025-11-05", "2025-11-06"], "positive_data": [2, 1, 47, 89, 58, 51, 43, 41, 45, 42, 64, 32, 35, 26, 26, 41, 30, 28, 26, 31, 21, 15, 19, 24, 15, 19, 16, 20, 12, 9, 7, 13, 9, 10, 17, 22, 24, 18, 19, 14, 10, 14, 20, 14, 24, 15, 6, 5, 7, 12, 7, 7, 7, 6, 9, 12, 11, 7, 7, 9, 8, 2, 7, 9, 7, 9, 15, 11, 12, 1, 8, 11, 14, 15, 4, 5, 8, 15, 18, 5, 7, 4, 8, 8, 14, 16, 17, 17, 12, 10, 32, 31, 10, 11, 8, 4, 8, 8, 11, 4, 2, 5, 9, 4, 5, 5, 6, 7, 3, 3, 4, 10, 15, 14, 2, 8, 5, 5, 7, 6, 14, 4, 11, 1, 8, 6, 6, 5, 4, 7, 18, 8, 5, 4, 14, 21, 5, 11, 13, 8, 6, 8, 8, 6, 8, 2, 7, 5, 4, 8, 6, 3, 4, 3, 1, 5, 0, 5, 4, 2, 4, 3, 6, 2, 5, 3, 4, 4, 7, 6, 3, 6, 4, 1, 1, 3, 2, 0, 1, 2, 3, 2, 6, 3, 3, 1, 3, 3, 1, 5, 2, 1, 3, 4, 6, 2, 5, 7, 3, 5, 3, 1, 2, 4, 6, 4, 5, 5, 6, 2, 3, 4, 6, 7, 12, 12, 6, 6, 7, 0, 3, 0, 5, 3, 8, 5, 6, 6, 6, 5, 3, 7, 11, 4, 4, 2, 7, 2, 5, 6, 3, 4, 10, 7, 4, 7, 6, 8, 6, 8, 6, 4, 8, 1, 13, 2, 4, 4, 9, 7, 6, 2, 4, 12, 8, 4, 1, 4, 6, 3, 11, 9, 9, 6, 6, 6, 9, 4, 9, 13, 7, 6, 7, 7, 6, 5, 10, 9, 10, 6, 7, 4, 10, 2, 3, 7, 6, 8, 7, 9, 7, 5, 5, 6, 6, 6, 1, 7, 9, 5, 1, 4, 7, 4, 6, 7, 1, 5, 7, 6, 3, 9, 5, 3, 2, 2, 3, 5, 3, 7, 10, 8, 14, 4, 7, 4, 10, 7, 10, 9, 0, 5, 5, 6, 4, 6, 9, 5, 7, 6, 12, 7, 7, 6, 10, 8, 8, 8, 7, 8, 2, 5, 8, 8, 4, 11, 8, 8, 3, 3, 2, 8, 12, 2, 3, 10, 12, 10, 9, 9, 6, 10, 13, 15, 7, 5, 7, 13, 8, 6, 5, 8, 5, 6, 0, 2, 3, 3, 8, 7, 11, 11, 8, 4, 6, 7, 16, 13, 23, 4, 6, 12, 6, 7, 8, 11, 12, 15, 11, 9, 6, 3, 11, 9, 5, 10, 14, 15, 11, 24, 20, 14, 9, 5, 6, 16, 12, 12, 16, 16, 13, 3, 5, 8, 11, 6, 14, 15, 14, 13, 14, 7, 6, 11, 10, 12, 5, 10, 18, 6, 7, 5, 11, 11, 13, 18, 8, 8, 18, 12, 12, 12, 4, 7, 4, 9, 11, 13, 6, 5, 9, 12, 7, 12, 9, 14, 12, 10, 9, 6, 14, 12, 4, 10, 7, 11, 5, 4, 8, 6, 11, 14, 13, 5, 13, 13, 8, 12, 6, 10, 9, 9, 15, 6, 10, 6, 8, 8, 12, 5, 8, 5, 9, 7, 4, 10, 7, 6, 6, 7, 4, 3, 6, 11, 8, 7, 3, 0, 10, 4, 8, 4, 6, 8, 8, 7, 5, 7, 11, 9, 7, 9, 4, 6, 10, 5, 3, 3, 3, 7, 6, 9, 6, 3, 10, 6, 3, 8, 12, 7, 1, 4, 1, 3, 6, 13, 3, 4, 3, 6, 14, 40, 14, 11, 10, 3, 8, 10, 15, 28, 8, 14, 15, 6, 10, 10, 14, 14, 5, 4, 4, 5, 7, 10, 12, 9, 9, 8, 12, 14, 28, 11, 20, 19, 54, 27, 12, 11, 8, 14, 10, 10, 14, 13, 26, 16, 12, 32, 21, 43, 25, 14, 16, 22, 25, 7, 9, 11, 21, 8, 25, 9, 13, 13, 15, 17, 9, 7, 10, 11, 8, 16, 12, 9, 5, 6, 6, 9, 16, 18, 32, 19, 7, 11, 14, 16, 10, 10, 7, 8, 11, 11, 7, 10, 29, 14, 7, 8, 12, 16, 12, 11, 13, 11, 5, 21, 12, 5, 10, 5, 9, 4, 10, 13, 19, 13, 8, 3, 11, 6, 10, 13, 9, 6, 7, 11, 10, 14, 7, 4, 6, 18, 12, 9, 13, 13, 7, 5, 5, 8, 4, 17, 6, 3, 2, 6, 4, 2, 5, 5, 2, 7, 10, 2, 6, 6, 7, 3, 4, 2, 2, 1, 12, 12, 11, 4, 4, 3, 4, 4, 13, 5, 5, 0, 8, 6, 5, 9, 7, 6, 4, 6, 4, 6, 10, 7, 4, 4, 4, 4, 7, 4, 9, 3, 2, 4, 4, 8, 7, 7, 3, 7, 3, 1, 3, 620, 7, 6, 4, 6, 10, 2, 9, 4, 6, 7, 7, 8, 8, 5, 7, 5, 8, 4, 6, 3, 2, 8, 1, 2, 8, 8, 3, 5, 2, 5, 5, 5, 3, 4, 5, 3, 9, 7, 5, 3, 6, 7, 6, 4, 7, 6, 7, 6, 7, 2, 5, 4, 3, 7, 6, 7, 3, 0, 1, 6, 5, 3, 3, 3, 1, 4, 4, 4, 4, 6, 2, 0, 2, 1, 0, 4, 3, 1, 1, 4, 2, 6, 3, 5, 8, 6, 6, 3, 3, 0, 3, 0, 2, 2, 2, 5, 6, 4, 6, 3, 3, 3, 3, 5, 1, 6, 2, 5, 0, 2, 0, 2, 1, 1, 5, 1], "negative_data": [0, 0, 30, 33, 21, 7, 18, 22, 13, 14, 15, 16, 8, 11, 21, 17, 13, 16, 6, 8, 5, 3, 5, 8, 2, 5, 3, 3, 2, 6, 3, 6, 2, 6, 6, 18, 20, 20, 7, 13, 8, 4, 10, 8, 6, 3, 4, 10, 6, 4, 3, 3, 8, 3, 5, 1, 3, 1, 3, 6, 6, 5, 1, 1, 8, 3, 1, 5, 4, 9, 4, 6, 5, 5, 8, 3, 3, 7, 11, 7, 5, 5, 9, 0, 10, 7, 16, 11, 4, 4, 33, 30, 10, 16, 7, 11, 2, 4, 5, 3, 4, 4, 4, 1, 2, 4, 2, 0, 1, 4, 6, 2, 2, 3, 4, 1, 2, 2, 8, 3, 1, 5, 3, 2, 5, 3, 4, 1, 5, 1, 2, 8, 2, 4, 4, 5, 7, 3, 2, 3, 2, 6, 1, 0, 1, 2, 1, 0, 3, 4, 1, 3, 0, 2, 4, 2, 0, 1, 1, 1, 3, 0, 2, 2, 1, 3, 2, 0, 1, 5, 0, 2, 1, 1, 1, 2, 3, 0, 2, 1, 1, 0, 0, 0, 1, 1, 2, 2, 1, 2, 2, 0, 2, 0, 1, 1, 1, 2, 0, 0, 0, 1, 1, 1, 0, 3, 2, 5, 2, 2, 1, 2, 1, 1, 1, 1, 1, 0, 2, 1, 0, 1, 2, 2, 2, 2, 1, 2, 2, 1, 1, 2, 2, 0, 3, 3, 1, 1, 3, 4, 0, 0, 0, 3, 2, 2, 0, 1, 1, 4, 3, 1, 2, 0, 2, 3, 1, 1, 2, 0, 1, 0, 1, 2, 0, 2, 3, 1, 1, 0, 3, 2, 2, 2, 3, 2, 3, 4, 7, 6, 5, 4, 2, 1, 2, 2, 3, 4, 5, 0, 1, 2, 0, 1, 2, 3, 1, 1, 2, 3, 0, 0, 1, 1, 1, 6, 2, 4, 1, 2, 2, 2, 2, 4, 3, 0, 2, 0, 2, 2, 0, 2, 3, 0, 0, 3, 1, 0, 3, 0, 3, 0, 3, 4, 1, 0, 2, 5, 4, 1, 4, 0, 1, 2, 1, 1, 1, 3, 2, 1, 3, 5, 1, 1, 0, 4, 2, 4, 2, 0, 2, 0, 2, 4, 1, 2, 3, 1, 0, 1, 3, 2, 3, 2, 1, 2, 0, 7, 3, 2, 1, 1, 2, 3, 2, 1, 6, 2, 3, 2, 2, 3, 4, 0, 1, 2, 2, 1, 3, 2, 1, 5, 0, 0, 3, 4, 2, 2, 4, 2, 3, 5, 1, 4, 1, 4, 3, 2, 3, 0, 5, 3, 1, 5, 1, 5, 3, 3, 4, 1, 3, 3, 4, 2, 6, 4, 0, 2, 7, 5, 2, 1, 2, 2, 7, 4, 4, 7, 3, 6, 5, 1, 3, 8, 1, 1, 1, 3, 3, 4, 0, 4, 3, 3, 2, 10, 5, 6, 7, 5, 6, 3, 3, 0, 3, 5, 1, 4, 2, 2, 1, 6, 1, 3, 3, 3, 4, 2, 1, 3, 6, 6, 6, 2, 5, 3, 1, 3, 2, 3, 5, 4, 2, 3, 4, 3, 5, 6, 1, 5, 2, 1, 4, 3, 2, 3, 3, 5, 5, 2, 0, 3, 3, 2, 1, 5, 3, 5, 2, 3, 2, 0, 3, 1, 1, 1, 0, 3, 3, 3, 4, 1, 2, 6, 2, 2, 4, 7, 2, 1, 2, 3, 1, 1, 4, 2, 0, 2, 1, 1, 5, 1, 1, 0, 3, 6, 4, 3, 6, 5, 0, 4, 2, 4, 2, 3, 5, 3, 2, 1, 4, 9, 3, 4, 8, 3, 1, 3, 1, 15, 2, 5, 4, 3, 5, 4, 5, 2, 3, 0, 2, 4, 2, 4, 1, 3, 5, 3, 4, 3, 11, 5, 2, 8, 17, 12, 5, 4, 5, 4, 4, 2, 6, 4, 7, 8, 4, 7, 12, 12, 7, 5, 11, 9, 9, 3, 4, 2, 4, 2, 10, 5, 1, 0, 3, 1, 1, 2, 2, 3, 0, 9, 10, 1, 2, 4, 5, 3, 3, 5, 25, 4, 0, 2, 6, 3, 9, 3, 1, 5, 4, 4, 3, 7, 9, 6, 5, 4, 3, 6, 7, 5, 3, 4, 4, 6, 5, 4, 1, 0, 1, 7, 3, 12, 4, 1, 3, 4, 2, 4, 10, 4, 4, 5, 2, 1, 2, 3, 0, 1, 4, 8, 2, 2, 3, 5, 2, 2, 0, 4, 4, 4, 5, 4, 0, 4, 4, 0, 5, 2, 3, 2, 1, 1, 0, 4, 1, 3, 1, 3, 0, 2, 1, 5, 3, 1, 1, 2, 2, 1, 1, 2, 2, 0, 1, 2, 1, 2, 5, 4, 1, 1, 0, 3, 1, 2, 6, 1, 1, 2, 0, 2, 3, 2, 3, 1, 1, 3, 6, 1, 2, 1, 0, 0, 6, 196, 3, 0, 3, 2, 1, 1, 2, 1, 2, 1, 3, 4, 1, 2, 0, 0, 3, 5, 3, 4, 2, 5, 2, 2, 1, 2, 2, 5, 2, 4, 3, 5, 4, 3, 2, 3, 3, 3, 2, 4, 3, 4, 6, 6, 4, 3, 7, 3, 5, 4, 1, 1, 1, 2, 4, 4, 0, 2, 4, 1, 1, 5, 2, 4, 2, 1, 5, 2, 0, 3, 1, 0, 1, 0, 2, 1, 4, 3, 1, 6, 1, 4, 1, 2, 5, 3, 6, 3, 3, 2, 1, 2, 2, 1, 0, 0, 1, 1, 1, 1, 0, 0, 0, 1, 3, 1, 0, 1, 2, 0, 4, 3, 3, 0, 1, 1], "neutral_data": [4, 0, 31, 65, 38, 27, 33, 32, 24, 20, 30, 26, 27, 17, 23, 20, 17, 12, 15, 11, 22, 19, 11, 7, 7, 7, 8, 7, 9, 4, 2, 12, 7, 12, 12, 20, 37, 22, 10, 11, 12, 6, 9, 6, 10, 12, 2, 8, 5, 10, 9, 5, 9, 15, 9, 8, 3, 4, 2, 5, 4, 3, 21, 6, 7, 9, 3, 7, 9, 13, 3, 11, 10, 8, 11, 8, 8, 8, 23, 8, 8, 4, 4, 10, 14, 11, 21, 15, 11, 5, 41, 53, 25, 19, 10, 11, 4, 4, 12, 3, 4, 5, 5, 4, 4, 4, 3, 0, 3, 0, 7, 2, 8, 2, 3, 4, 3, 3, 6, 5, 8, 5, 9, 11, 9, 2, 4, 4, 10, 3, 2, 7, 7, 4, 3, 10, 6, 6, 7, 4, 2, 3, 7, 2, 8, 1, 2, 5, 5, 4, 5, 2, 4, 4, 4, 3, 3, 0, 1, 1, 0, 0, 3, 5, 4, 1, 2, 3, 1, 3, 1, 2, 3, 1, 2, 1, 0, 2, 1, 1, 3, 1, 3, 2, 0, 1, 3, 6, 0, 5, 1, 5, 0, 2, 4, 1, 1, 0, 0, 1, 3, 1, 1, 2, 2, 1, 3, 3, 1, 3, 6, 7, 5, 3, 4, 4, 6, 3, 4, 2, 1, 2, 6, 1, 1, 3, 8, 0, 6, 4, 4, 2, 3, 3, 4, 3, 3, 3, 4, 4, 2, 3, 4, 3, 2, 4, 6, 4, 5, 8, 1, 5, 2, 0, 4, 2, 2, 1, 4, 3, 2, 2, 1, 4, 2, 2, 1, 3, 4, 1, 3, 4, 2, 3, 3, 7, 4, 1, 5, 4, 6, 5, 3, 8, 4, 1, 3, 4, 4, 1, 2, 4, 5, 3, 2, 3, 1, 3, 4, 4, 6, 2, 4, 5, 6, 4, 4, 4, 2, 2, 8, 2, 1, 5, 3, 3, 2, 2, 1, 4, 2, 1, 2, 4, 1, 2, 3, 4, 3, 4, 3, 0, 7, 1, 6, 2, 6, 8, 4, 3, 1, 1, 2, 3, 1, 4, 3, 6, 2, 5, 7, 9, 4, 4, 2, 5, 5, 4, 2, 0, 1, 0, 3, 5, 7, 8, 1, 2, 2, 2, 2, 6, 6, 2, 3, 4, 2, 6, 6, 6, 5, 2, 6, 5, 5, 6, 8, 4, 5, 5, 2, 5, 1, 1, 0, 1, 4, 2, 3, 3, 7, 4, 4, 6, 3, 7, 3, 11, 4, 6, 4, 8, 4, 2, 5, 7, 6, 6, 13, 1, 5, 7, 3, 7, 3, 5, 2, 5, 7, 10, 6, 5, 3, 4, 4, 16, 5, 2, 3, 8, 4, 6, 4, 7, 8, 8, 6, 5, 8, 6, 13, 5, 7, 9, 6, 8, 3, 5, 5, 8, 3, 3, 11, 10, 5, 13, 2, 2, 8, 4, 9, 3, 2, 2, 7, 2, 11, 13, 8, 2, 2, 4, 2, 3, 5, 14, 4, 4, 8, 5, 11, 9, 4, 4, 4, 4, 3, 4, 1, 5, 8, 6, 7, 8, 11, 4, 4, 8, 4, 5, 7, 4, 4, 5, 1, 7, 7, 7, 9, 9, 7, 3, 5, 3, 4, 4, 5, 5, 6, 5, 2, 1, 4, 7, 3, 3, 5, 3, 3, 7, 4, 4, 3, 1, 3, 4, 11, 6, 5, 4, 5, 5, 2, 13, 9, 3, 1, 3, 5, 5, 9, 4, 3, 5, 1, 7, 7, 7, 1, 5, 2, 5, 3, 4, 6, 7, 4, 7, 5, 8, 9, 24, 14, 14, 3, 3, 7, 6, 11, 25, 11, 7, 19, 8, 3, 9, 12, 9, 4, 7, 7, 6, 14, 6, 12, 7, 7, 13, 9, 11, 48, 12, 8, 13, 61, 28, 20, 12, 12, 16, 11, 19, 6, 21, 11, 19, 14, 29, 17, 34, 19, 21, 15, 10, 14, 12, 9, 13, 12, 4, 20, 9, 6, 7, 18, 6, 10, 6, 7, 11, 5, 18, 12, 10, 6, 5, 7, 13, 8, 13, 39, 6, 7, 7, 9, 13, 15, 6, 6, 7, 6, 2, 15, 14, 29, 8, 9, 6, 7, 16, 7, 5, 5, 10, 2, 11, 13, 14, 12, 5, 7, 4, 6, 11, 12, 7, 7, 7, 4, 8, 6, 12, 8, 8, 4, 2, 9, 9, 5, 3, 3, 9, 11, 6, 10, 9, 9, 2, 5, 8, 4, 15, 9, 6, 6, 7, 2, 5, 5, 8, 5, 4, 5, 2, 0, 4, 8, 7, 2, 7, 8, 5, 6, 11, 10, 3, 3, 5, 5, 4, 2, 6, 5, 3, 2, 2, 3, 6, 4, 8, 4, 3, 1, 1, 3, 5, 3, 6, 10, 3, 14, 7, 5, 3, 3, 1, 3, 5, 9, 4, 10, 12, 2, 9, 10, 566, 4, 6, 12, 4, 6, 7, 8, 2, 3, 6, 4, 5, 5, 6, 6, 6, 4, 8, 7, 3, 5, 3, 5, 6, 6, 7, 2, 3, 2, 2, 3, 6, 4, 5, 8, 9, 13, 5, 3, 5, 6, 6, 5, 9, 6, 4, 9, 8, 3, 2, 3, 2, 4, 4, 6, 2, 2, 3, 2, 3, 6, 3, 7, 3, 3, 3, 2, 7, 7, 5, 4, 3, 2, 2, 2, 3, 5, 4, 1, 9, 6, 3, 1, 6, 6, 11, 3, 1, 2, 1, 1, 6, 1, 1, 2, 2, 5, 6, 2, 1, 1, 1, 3, 2, 0, 3, 0, 4, 4, 1, 3, 5, 3, 2, 1, 3]};
+
+    // 渲染饼图
+    const pieChart = echarts.init(document.getElementById('pieChart'));
+    const pieOption = {
+        tooltip: {
+            trigger: 'item',
+            formatter: '{{b}}: {{c}} ({{d}}%)'
+        },
+        legend: {
+            orient: 'vertical',
+            left: 'left'
+        },
+        series: [{
+            name: '情感分布',
+            type: 'pie',
+            radius: '50%',
+            data: [
+                {value: pieData[0].value, name: '积极', itemStyle: {color: '#4CAF50'}},
+                {value: pieData[1].value, name: '消极', itemStyle: {color: '#F44336'}},
+                {value: pieData[2].value, name: '中性', itemStyle: {color: '#FFC107'}}
+            ],
+            emphasis: {
+                itemStyle: {
+                    shadowBlur: 10,
+                    shadowOffsetX: 0,
+                    shadowColor: 'rgba(0, 0, 0, 0.5)'
+                }
+            }
+        }]
+    };
+    pieChart.setOption(pieOption);
+    
+
+    // 渲染趋势图
+    const trendChart = echarts.init(document.getElementById('trendChart'));
+    const trendOption = {
+        tooltip: {
+            trigger: 'axis',
+            formatter: function(params) {
+                let result = params[0].name + '<br/>';
+                params.forEach(function(param) {
+                    result += param.marker + param.seriesName + ': ' + param.value + '<br/>';
+                });
+                return result;
+            }
+        },
+        legend: {
+            data: ['消极评论', '中性评论', '积极评论']
+        },
+        xAxis: {
+            type: 'category',
+            data: trendData.dates,
+            axisLabel: {
+                rotate: 45
+            }
+        },
+        yAxis: {
+            type: 'value',
+            name: '评论数量'
+        },
+        series: [
+            {
+                name: '消极评论',
+                type: 'line',
+                data: trendData.negative_data,
+                smooth: true,
+                itemStyle: {color: '#F44336'},
+                areaStyle: {
+                    color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                        {offset: 0, color: 'rgba(244, 67, 54, 0.3)'},
+                        {offset: 1, color: 'rgba(244, 67, 54, 0.05)'}
+                    ])
+                }
+            },
+            {
+                name: '中性评论',
+                type: 'line',
+                data: trendData.neutral_data,
+                smooth: true,
+                itemStyle: {color: '#FFC107'},
+                areaStyle: {
+                    color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                        {offset: 0, color: 'rgba(255, 193, 7, 0.3)'},
+                        {offset: 1, color: 'rgba(255, 193, 7, 0.05)'}
+                    ])
+                }
+            },
+            {
+                name: '积极评论',
+                type: 'line',
+                data: trendData.positive_data,
+                smooth: true,
+                itemStyle: {color: '#4CAF50'},
+                areaStyle: {
+                    color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                        {offset: 0, color: 'rgba(76, 175, 80, 0.3)'},
+                        {offset: 1, color: 'rgba(76, 175, 80, 0.05)'}
+                    ])
+                }
+            }
+        ],
+        dataZoom: [
+            {
+                type: 'inside',
+                start: 0,
+                end: 100
+            },
+            {
+                start: 0,
+                end: 100,
+                height: 20
+            }
+        ]
+    };
+    trendChart.setOption(trendOption);
+    
+
+    // 响应式处理
+    window.addEventListener('resize', function() {
+        pieChart.resize();
+        trendChart.resize();
+    });
+    
+</script>
+</body>
+</html>

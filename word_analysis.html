@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>评论词频分析</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.4.3/echarts.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts-wordcloud/2.1.0/echarts-wordcloud.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            text-align: center;
+            color: white;
+            font-size: 2.5em;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .stats-box {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            text-align: center;
+        }
+        
+        .stats-box h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 15px;
+        }
+        
+        .stat-item {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+        }
+        
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+        
+        .charts-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .chart-box {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        .chart-title {
+            font-size: 1.5em;
+            color: #333;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        .chart {
+            width: 100%;
+            height: 600px;
+        }
+        
+        .bar-chart {
+            width: 100%;
+            height: 600px;
+        }
+        
+        .keywords-box {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        .keywords-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .keyword-item {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: transform 0.3s;
+        }
+        
+        .keyword-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        
+        .keyword-rank {
+            font-weight: bold;
+            font-size: 1.2em;
+            margin-right: 10px;
+        }
+        
+        .keyword-text {
+            flex: 1;
+            font-size: 1.1em;
+        }
+        
+        .keyword-count {
+            background: rgba(255,255,255,0.3);
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        
+        @media (max-width: 768px) {
+            .charts-container {
+                grid-template-columns: 1fr;
+            }
+            
+            h1 {
+                font-size: 1.8em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📊 评论词频分析可视化</h1>
+        
+        <div class="stats-box">
+            <h2>数据概览</h2>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-value">50</div>
+                    <div class="stat-label">关键词数量</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">20653</div>
+                    <div class="stat-label">总词频</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">2606</div>
+                    <div class="stat-label">最高词频</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">染缸</div>
+                    <div class="stat-label">热门词汇</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="charts-container">
+            <div class="chart-box">
+                <div class="chart-title">🌈 词云图</div>
+                <div id="wordCloud" class="chart"></div>
+            </div>
+            
+            <div class="chart-box">
+                <div class="chart-title">📊 Top20 词频柱状图</div>
+                <div id="barChart" class="bar-chart"></div>
+            </div>
+        </div>
+        
+        <div class="keywords-box">
+            <div class="chart-title">🔥 Top50 高频关键词</div>
+            <div id="keywordsList" class="keywords-grid"></div>
+        </div>
+    </div>
+
+    <script>
+        // 数据
+        const wordCloudData = [{"name": "染缸", "value": 2606}, {"name": "好听", "value": 1653}, {"name": "草东", "value": 1023}, {"name": "跳进", "value": 890}, {"name": "没有", "value": 860}, {"name": "打卡", "value": 795}, {"name": "加油", "value": 690}, {"name": "多多", "value": 633}, {"name": "不是", "value": 568}, {"name": "知道", "value": 504}, {"name": "一二三跳", "value": 458}, {"name": "喜欢", "value": 434}, {"name": "哈哈哈", "value": 408}, {"name": "社会", "value": 399}, {"name": "欲望", "value": 398}, {"name": "大海", "value": 382}, {"name": "真的", "value": 344}, {"name": "现在", "value": 332}, {"name": "世界", "value": 323}, {"name": "死亡", "value": 321}, {"name": "123", "value": 288}, {"name": "啊啊啊", "value": 281}, {"name": "感觉", "value": 278}, {"name": "自由", "value": 269}, {"name": "不会", "value": 267}, {"name": "觉得", "value": 260}, {"name": "生活", "value": 258}, {"name": "已经", "value": 254}, {"name": "茫茫", "value": 248}, {"name": "我要", "value": 238}, {"name": "好好", "value": 220}, {"name": "发现", "value": 218}, {"name": "不要", "value": 215}, {"name": "首歌", "value": 212}, {"name": "别人", "value": 210}, {"name": "司马光", "value": 209}, {"name": "人生", "value": 205}, {"name": "看到", "value": 201}, {"name": "希望", "value": 201}, {"name": "教育", "value": 199}, {"name": "高中", "value": 197}, {"name": "不错", "value": 197}, {"name": "学校", "value": 195}, {"name": "一二三", "value": 195}, {"name": "梦想", "value": 192}, {"name": "看见", "value": 192}, {"name": "一下", "value": 186}, {"name": "摇滚", "value": 185}, {"name": "膨胀", "value": 183}, {"name": "现场", "value": 179}, {"name": "哈哈哈哈", "value": 176}, {"name": "有人", "value": 171}, {"name": "最后", "value": 171}, {"name": "信仰", "value": 162}, {"name": "评论", "value": 162}, {"name": "意义", "value": 160}, {"name": "出来", "value": 159}, {"name": "不能", "value": 159}, {"name": "笑声", "value": 158}, {"name": "活着", "value": 158}, {"name": "大哭", "value": 156}, {"name": "其实", "value": 155}, {"name": "以为", "value": 152}, {"name": "朋友", "value": 150}, {"name": "高考", "value": 150}, {"name": "不想", "value": 148}, {"name": "思想", "value": 145}, {"name": "大家", "value": 145}, {"name": "安慰", "value": 144}, {"name": "大笑", "value": 143}, {"name": "大学", "value": 142}, {"name": "派对", "value": 142}, {"name": "可能", "value": 138}, {"name": "跳出", "value": 137}, {"name": "听到", "value": 133}, {"name": "何方", "value": 133}, {"name": "应该", "value": 132}, {"name": "一定", "value": 132}, {"name": "只能", "value": 131}, {"name": "想要", "value": 131}, {"name": "好像", "value": 130}, {"name": "遗忘", "value": 129}, {"name": "音乐", "value": 128}, {"name": "歌词", "value": 128}, {"name": "乐队", "value": 127}, {"name": "这种", "value": 126}, {"name": "不知", "value": 124}, {"name": "今天", "value": 124}, {"name": "更大", "value": 121}, {"name": "成为", "value": 121}, {"name": "开心", "value": 121}, {"name": "一种", "value": 120}, {"name": "预备", "value": 120}, {"name": "人们", "value": 119}, {"name": "一起", "value": 117}, {"name": "一套", "value": 116}, {"name": "需要", "value": 115}, {"name": "永远", "value": 115}, {"name": "变成", "value": 115}, {"name": "豪庭", "value": 114}, {"name": "痛苦", "value": 113}, {"name": "未来", "value": 112}, {"name": "各就各位", "value": 111}, {"name": "永存", "value": 109}, {"name": "问题", "value": 107}, {"name": "努力", "value": 106}, {"name": "兄弟", "value": 106}, {"name": "改变", "value": 105}, {"name": "东西", "value": 104}, {"name": "VIP", "value": 103}, {"name": "颜色", "value": 101}, {"name": "大染缸", "value": 101}, {"name": "有点", "value": 100}, {"name": "捂脸", "value": 98}, {"name": "起来", "value": 96}, {"name": "孩子", "value": 96}, {"name": "突然", "value": 96}, {"name": "vip", "value": 95}, {"name": "每个", "value": 94}, {"name": "一次", "value": 94}, {"name": "明白", "value": 92}, {"name": "不了", "value": 92}, {"name": "身在", "value": 92}, {"name": "确实", "value": 91}, {"name": "妈妈", "value": 91}, {"name": "网易", "value": 91}, {"name": "明天", "value": 91}, {"name": "学习", "value": 90}, {"name": "现实", "value": 90}, {"name": "之后", "value": 89}, {"name": "很多", "value": 88}, {"name": "旋律", "value": 88}, {"name": "陪葬", "value": 87}, {"name": "巫堵", "value": 86}, {"name": "谢谢", "value": 86}, {"name": "以后", "value": 86}, {"name": "开玩笑", "value": 85}, {"name": "这首", "value": 84}, {"name": "听草东", "value": 84}, {"name": "耍酷", "value": 83}, {"name": "他們", "value": 81}, {"name": "聲音", "value": 81}, {"name": "生命", "value": 80}, {"name": "中国", "value": 80}, {"name": "音乐节", "value": 80}, {"name": "一点", "value": 80}, {"name": "终于", "value": 79}, {"name": "考不上", "value": 79}, {"name": "前面", "value": 78}, {"name": "时间", "value": 78}, {"name": "玩具", "value": 77}, {"name": "之前", "value": 77}, {"name": "真正", "value": 77}, {"name": "一句", "value": 76}, {"name": "不到", "value": 76}, {"name": "老师", "value": 76}, {"name": "无法", "value": 75}, {"name": "便宜", "value": 74}, {"name": "快乐", "value": 74}, {"name": "要海", "value": 73}, {"name": "认为", "value": 72}, {"name": "一天", "value": 70}, {"name": "事情", "value": 70}, {"name": "任务", "value": 70}, {"name": "特别", "value": 70}, {"name": "考上", "value": 69}, {"name": "记得", "value": 69}, {"name": "工作", "value": 69}, {"name": "到底", "value": 68}, {"name": "耳机", "value": 68}, {"name": "学生", "value": 68}, {"name": "初中", "value": 67}, {"name": "所谓", "value": 66}, {"name": "一辈子", "value": 66}, {"name": "意思", "value": 66}, {"name": "巨大", "value": 66}, {"name": "原来", "value": 66}, {"name": "理解", "value": 66}, {"name": "专辑", "value": 65}, {"name": "或许", "value": 65}, {"name": "看看", "value": 65}, {"name": "每天", "value": 64}, {"name": "情绪", "value": 64}, {"name": "幸福", "value": 64}, {"name": "过去", "value": 64}, {"name": "这是", "value": 63}, {"name": "同学", "value": 63}, {"name": "一首", "value": 63}, {"name": "天天开心", "value": 62}, {"name": "洛天", "value": 62}, {"name": "开头", "value": 62}, {"name": "外面", "value": 62}, {"name": "昨天", "value": 62}, {"name": "难过", "value": 62}, {"name": "开学", "value": 61}, {"name": "中式", "value": 61}, {"name": "直接", "value": 61}, {"name": "阜阳", "value": 61}, {"name": "百万富翁", "value": 60}, {"name": "地方", "value": 60}];
+        const barWords = ["染缸", "好听", "草东", "跳进", "没有", "打卡", "加油", "多多", "不是", "知道", "一二三跳", "喜欢", "哈哈哈", "社会", "欲望", "大海", "真的", "现在", "世界", "死亡"];
+        const barCounts = [2606, 1653, 1023, 890, 860, 795, 690, 633, 568, 504, 458, 434, 408, 399, 398, 382, 344, 332, 323, 321];
+        const top50Data = [["染缸", 2606], ["好听", 1653], ["草东", 1023], ["跳进", 890], ["没有", 860], ["打卡", 795], ["加油", 690], ["多多", 633], ["不是", 568], ["知道", 504], ["一二三跳", 458], ["喜欢", 434], ["哈哈哈", 408], ["社会", 399], ["欲望", 398], ["大海", 382], ["真的", 344], ["现在", 332], ["世界", 323], ["死亡", 321], ["123", 288], ["啊啊啊", 281], ["感觉", 278], ["自由", 269], ["不会", 267], ["觉得", 260], ["生活", 258], ["已经", 254], ["茫茫", 248], ["我要", 238], ["好好", 220], ["发现", 218], ["不要", 215], ["首歌", 212], ["别人", 210], ["司马光", 209], ["人生", 205], ["看到", 201], ["希望", 201], ["教育", 199], ["高中", 197], ["不错", 197], ["学校", 195], ["一二三", 195], ["梦想", 192], ["看见", 192], ["一下", 186], ["摇滚", 185], ["膨胀", 183], ["现场", 179]];
+
+        // 渲染词云
+        function renderWordCloud() {
+            const chartDom = document.getElementById('wordCloud');
+            const chart = echarts.init(chartDom);
+            
+            const option = {
+                tooltip: {
+                    show: true,
+                    formatter: function(params) {
+                        return params.name + ': ' + params.value;
+                    }
+                },
+                series: [{
+                    type: 'wordCloud',
+                    shape: 'circle',
+                    left: 'center',
+                    top: 'center',
+                    width: '90%',
+                    height: '90%',
+                    right: null,
+                    bottom: null,
+                    sizeRange: [12, 80],
+                    rotationRange: [-90, 90],
+                    rotationStep: 45,
+                    gridSize: 6,
+                    drawOutOfBound: false,
+                    layoutAnimation: true,
+                    textStyle: {
+                        fontFamily: 'Microsoft YaHei',
+                        fontWeight: 'bold',
+                        color: function() {
+                            const colors = [
+                                '#667eea', '#764ba2', '#f093fb', '#4facfe',
+                                '#43e97b', '#fa709a', '#fee140', '#30cfd0'
+                            ];
+                            return colors[Math.floor(Math.random() * colors.length)];
+                        }
+                    },
+                    emphasis: {
+                        focus: 'self',
+                        textStyle: {
+                            textShadowBlur: 10,
+                            textShadowColor: '#333'
+                        }
+                    },
+                    data: wordCloudData
+                }]
+            };
+            
+            chart.setOption(option);
+            
+            window.addEventListener('resize', function() {
+                chart.resize();
+            });
+        }
+
+        // 渲染柱状图
+        function renderBarChart() {
+            const chartDom = document.getElementById('barChart');
+            const chart = echarts.init(chartDom);
+            
+            const option = {
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: {
+                        type: 'shadow'
+                    }
+                },
+                grid: {
+                    left: '10%',
+                    right: '5%',
+                    bottom: '3%',
+                    top: '3%',
+                    containLabel: true
+                },
+                xAxis: {
+                    type: 'value',
+                    boundaryGap: [0, 0.01],
+                    axisLabel: {
+                        fontSize: 12
+                    }
+                },
+                yAxis: {
+                    type: 'category',
+                    data: barWords.slice().reverse(),
+                    axisLabel: {
+                        interval: 0,
+                        rotate: 0,
+                        fontSize: 13,
+                        margin: 10
+                    }
+                },
+                series: [
+                    {
+                        type: 'bar',
+                        data: barCounts.slice().reverse(),
+                        itemStyle: {
+                            color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
+                                { offset: 0, color: '#667eea' },
+                                { offset: 1, color: '#764ba2' }
+                            ])
+                        },
+                        label: {
+                            show: true,
+                            position: 'right',
+                            formatter: '{c}',
+                            fontSize: 12
+                        },
+                        barWidth: '60%'
+                    }
+                ]
+            };
+            
+            chart.setOption(option);
+            
+            window.addEventListener('resize', function() {
+                chart.resize();
+            });
+        }
+
+        // 渲染关键词列表
+        function renderKeywordsList() {
+            const container = document.getElementById('keywordsList');
+            container.innerHTML = '';
+            
+            top50Data.forEach(([word, count], index) => {
+                const item = document.createElement('div');
+                item.className = 'keyword-item';
+                item.innerHTML = `
+                    <span class="keyword-rank">#${index + 1}</span>
+                    <span class="keyword-text">${word}</span>
+                    <span class="keyword-count">${count}</span>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        // 初始化
+        window.onload = function() {
+            renderWordCloud();
+            renderBarChart();
+            renderKeywordsList();
+        };
+    </script>
+</body>
+</html>

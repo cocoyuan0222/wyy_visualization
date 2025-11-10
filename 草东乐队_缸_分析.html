@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>草东没有派对 - 缸</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f5f5;
+        }
+        
+        /* 导航栏 */
+        .navbar {
+            background-color: #333;
+            color: white;
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        
+        .navbar-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: center;
+        }
+        
+        .nav-links {
+            list-style: none;
+            display: flex;
+            gap: 2rem;
+        }
+        
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            font-size: 1.1rem;
+            transition: color 0.3s;
+        }
+        
+        .nav-links a:hover {
+            color: #ff6b6b;
+        }
+        
+        /* 主要内容 */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        /* 封面部分 */
+        .cover-section {
+            position: relative;
+            width: 100%;
+            max-height: 70vh;
+            overflow: hidden;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+        
+        .cover-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s;
+        }
+        
+        .cover-section:hover .cover-image {
+            transform: scale(1.05);
+        }
+        
+        .play-button {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(255, 107, 107, 0.8);
+            border: none;
+            border-radius: 50%;
+            width: 100px;
+            height: 100px;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .play-button:hover {
+            background-color: #ff6b6b;
+            transform: translate(-50%, -50%) scale(1.1);
+        }
+        
+        /* 视频播放器 */
+        .video-container {
+            display: none;
+            width: 100%;
+            margin: 2rem 0;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+        
+        .video-container video {
+            width: 100%;
+            height: auto;
+        }
+        
+        /* 歌词部分 */
+        .lyrics-section {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 10px;
+            margin: 2rem 0;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .lyrics-section h2 {
+            color: #ff6b6b;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            font-size: 2rem;
+        }
+        
+        .lyrics {
+            font-size: 1.2rem;
+            line-height: 2;
+            text-align: center;
+            white-space: pre-line;
+            color: #555;
+        }
+        
+        /* 简介部分 */
+        .intro-section {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .intro-section h2 {
+            color: #ff6b6b;
+            margin-bottom: 1rem;
+            text-align: center;
+            font-size: 2rem;
+        }
+        
+        .intro-text {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: #555;
+        }
+        
+        /* 情感分析部分 */
+        .emotion-analysis-section {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .emotion-analysis-section h2 {
+            color: #ff6b6b;
+            margin-bottom: 1rem;
+            text-align: center;
+            font-size: 2rem;
+        }
+        
+        .emotion-content {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: #555;
+            text-align: center;
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .nav-links {
+                flex-direction: column;
+                align-items: center;
+                gap: 1rem;
+            }
+            
+            .play-button {
+                width: 80px;
+                height: 80px;
+                font-size: 1.2rem;
+            }
+            
+            .lyrics {
+                font-size: 1rem;
+            }
+            
+            .intro-text {
+                font-size: 1rem;
+            }
+            
+            .emotion-content {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar">
+        <div class="navbar-container">
+            <ul class="nav-links">
+                <li><a href="https://music.163.com/#/song?id=2046562196" target="_blank">原网页</a></li>
+                <li><a href="D:\畅课资源\pythonProject3\网易云爬虫代码\最终版网页文件\评论量时间趋势图_new.html" target="_blank">评论时间趋势图</a></li>
+                <li><a href="D:\畅课资源\pythonProject3\网易云爬虫代码\最终版网页文件\word_analysis.html" target="_blank">评论分析可视化</a></li>
+                <li><a href="D:\畅课资源\pythonProject3\网易云爬虫代码\最终版网页文件\热门评论情感分析.html" target="_blank">热门评论及情感分析</a></li>
+            </ul>
+        </div>
+    </nav>
+    
+    <div class="container">
+        <!-- 封面图片 -->
+        <div class="cover-section">
+            <img src="cover.jpg" alt="草东没有派对 - 缸" class="cover-image">
+            <button class="play-button" onclick="showVideo()">播放歌曲</button>
+        </div>
+        
+        <!-- 视频播放器 -->
+        <div class="video-container" id="videoContainer">
+            <video controls>
+                <source src="gang.mp4" type="video/mp4">
+                您的浏览器不支持HTML5视频。
+            </video>
+        </div>
+        
+        <!-- 歌词 -->
+        <section class="lyrics-section">
+            <h2>歌词</h2>
+            <div class="lyrics">預備 各就各位 
+ 一二三 跳 跳進染缸 
+ 看誰先 游向慾望 
+ 膨脹 膨脹 再膨脹 
+ 就像那數字一樣 
+ 誰沒有信仰 誰沒有思想 
+ 誰沒有最便宜的酒來陪葬 
+ 一二三跳 跳進染缸 
+ 看誰先 游向慾望 
+ 遺忘 遺忘 再遺忘 
+ 就像我們記得的那樣 
+ 缸裡有夢想 缸底有爛帳 
+ 誰賠了信仰 誰對自己撒謊 
+ 誰喝著最便宜的酒去陪葬 
+ 一二三跳 跳進染缸 
+ 看誰先 游向慾望 
+ 可就連食色性也終將 
+ 游向死亡 游向死亡 
+ 於是砸了染缸 砸了染缸 
+ 才看見大海茫茫 
+ 而你我仍不知身在何方</div>
+        </section>
+        
+        <!-- 歌曲简介 -->
+        <section class="intro-section">
+            <h2>歌曲简介</h2>
+            <div class="intro-text">《缸》是中国台湾摇滚乐队草东没有派对于2023年5月20日发行的歌曲，收录于专辑《瓦合》。歌曲以跳进染缸、追逐欲望为意象，探讨了信仰与遗忘的主题，并在歌词中以砸破染缸、面对迷茫大海的隐喻结尾，展现了乐队一贯的批判性与反思风格。</div>
+        </section>
+        
+    </div>
+    
+    <script>
+        function showVideo() {
+            const videoContainer = document.getElementById('videoContainer');
+            const coverSection = document.querySelector('.cover-section');
+            const playButton = document.querySelector('.play-button');
+            
+            // 隐藏播放按钮
+            playButton.style.display = 'none';
+            
+            // 移除绝对定位样式，让视频容器正常显示在封面图片下方
+            videoContainer.style.position = 'static';
+            videoContainer.style.display = 'block';
+            
+            // 尝试播放视频
+            const video = videoContainer.querySelector('video');
+            
+            // 监听视频加载错误
+            video.addEventListener('error', function() {
+                const videoParent = video.parentNode;
+                videoParent.innerHTML = '<p style="padding: 20px; text-align: center; color: #ff6b6b;">视频加载失败，请尝试直接打开视频文件: <a href="gang.mp4" target="_blank">gang.mp4</a></p>';
+            });
+            
+            video.play().catch(error => {
+                console.log('自动播放失败:', error);
+            });
+        }
+    </script>
+</body>
+</html>
